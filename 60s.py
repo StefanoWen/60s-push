@@ -394,39 +394,45 @@ class SixtySecondsNews:
         """
         try:
             print("开始获取60秒读懂世界数据...")
-            
             # 获取60秒数据
             raw_60s_data = self.get_60s_data()
             print("60秒数据获取成功")
             parsed_60s_data = self.parse_news_data(raw_60s_data)
             print("60秒数据解析成功")
-            
+
             print("开始获取历史上的今天数据...")
             # 获取历史上的今天数据
             raw_history_data = self.get_history_data()
             print("历史数据获取成功")
             history_events = self.parse_history_data(raw_history_data)
             print("历史数据解析成功")
-            
+
             print("开始获取Epic免费游戏数据...")
             # 获取Epic免费游戏数据
             raw_epic_data = self.get_epic_data()
             print("Epic数据获取成功")
             epic_games = self.parse_epic_data(raw_epic_data)
             print("Epic数据解析成功")
-            
-            # 构建消息
-            markdown_content = self.build_markdown_message(parsed_60s_data, history_events, epic_games)
-            print("消息构建成功")
-            
-            # 发送消息
-            success = self.send_to_wechat(markdown_content)
-            
-            if success:
-                print("✅ 消息发送到企业微信成功！")
+
+            # 构建主消息（新闻+Epic）
+            main_content = self.build_main_message(parsed_60s_data, epic_games)
+            print("主消息构建成功")
+            # 构建历史消息
+            history_content = self.build_history_message(parsed_60s_data, history_events)
+            print("历史消息构建成功")
+
+            # 发送主消息
+            main_success = self.send_to_wechat(main_content)
+            if main_success:
+                print("✅ 主消息发送到企业微信成功！")
             else:
-                print("❌ 消息发送失败")
-                
+                print("❌ 主消息发送失败")
+            # 发送历史消息
+            history_success = self.send_to_wechat(history_content)
+            if history_success:
+                print("✅ 历史消息发送到企业微信成功！")
+            else:
+                print("❌ 历史消息发送失败")
         except Exception as e:
             print(f"❌ 运行出错: {str(e)}")
 
@@ -440,39 +446,39 @@ def main():
     if webhook_key == "YOUR_WEBHOOK_KEY_HERE":
         print("请先配置企业微信机器人的webhook key")
         print("测试模式：仅显示生成的markdown内容")
-        
         # 测试模式：只获取数据并显示markdown内容，不发送
         try:
             news_bot = SixtySecondsNews("TEST_KEY")
-            
             print("开始获取60秒读懂世界数据...")
             raw_60s_data = news_bot.get_60s_data()
             print("60秒数据获取成功")
             parsed_60s_data = news_bot.parse_news_data(raw_60s_data)
             print("60秒数据解析成功")
-            
             print("开始获取历史上的今天数据...")
             raw_history_data = news_bot.get_history_data()
             print("历史数据获取成功")
             history_events = news_bot.parse_history_data(raw_history_data)
             print("历史数据解析成功")
-            
             print("开始获取Epic免费游戏数据...")
             raw_epic_data = news_bot.get_epic_data()
             print("Epic数据获取成功")
             epic_games = news_bot.parse_epic_data(raw_epic_data)
             print("Epic数据解析成功")
-            
-            # 构建消息
-            markdown_content = news_bot.build_markdown_message(parsed_60s_data, history_events, epic_games)
-            print("消息构建成功")
-            
+            # 构建主消息
+            main_content = news_bot.build_main_message(parsed_60s_data, epic_games)
+            print("主消息构建成功")
+            # 构建历史消息
+            history_content = news_bot.build_history_message(parsed_60s_data, history_events)
+            print("历史消息构建成功")
             print("\n" + "="*50)
-            print("生成的Markdown内容:")
+            print("主消息 Markdown 内容:")
             print("="*50)
-            print(markdown_content)
+            print(main_content)
             print("="*50)
-            
+            print("历史消息 Markdown 内容:")
+            print("="*50)
+            print(history_content)
+            print("="*50)
         except Exception as e:
             print(f"❌ 测试运行出错: {str(e)}")
         return
